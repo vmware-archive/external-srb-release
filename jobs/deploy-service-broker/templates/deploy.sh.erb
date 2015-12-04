@@ -1,0 +1,193 @@
+#!/bin/bash
+set -e -x
+
+  <%
+    def grab_app_domain_name
+      app_domains_str = properties.app_domains.to_s
+      array_start = ( app_domains_str =~ /^\[/ )
+      if (array_start == 0)
+        app_domain_entry = app_domains_str.gsub(/^\[/, '').gsub(/\]/,'').gsub(/,.*/, '')
+      else
+        app_domain_entry = app_domains_str
+      end
+      app_domain_entry
+    end
+    app_domain = grab_app_domain_name
+  %>
+
+export PATH="/var/vcap/packages/cf_cli/bin:$PATH"
+
+export SCHEME=https
+export ADMIN_USER=<%= properties.srb_broker.cf.admin_user %>
+export ADMIN_PASSWORD=<%= properties.srb_broker.cf.admin_password %>
+export DOMAIN=<%= properties.domain %>
+export APP_DOMAIN=<%="#{app_domain}"%>
+export API_ENDPOINT=$SCHEME://api.${DOMAIN}
+export APP_NAME=<%= properties.srb_broker.app_name %>
+export APP_VERSION=<%= properties.srb_broker.app_version %>
+export APP_URI=<%= properties.srb_broker.app_uri %>
+export ORG=${APP_NAME}-service-org
+export SPACE=${APP_NAME}-service-space
+export QUOTA=${APP_NAME}-service-quota
+export CF_TARGET=$API_ENDPOINT
+export CF_ORG=$ORG
+export CF_SPACE=$SPACE
+export CF_USER=$ADMIN_USER
+export CF_PASSWORD=$ADMIN_PASSWORD
+export CF_SKIP_SSL=<%= properties.ssl.skip_cert_verify %>
+export ORG_QUOTA=<%= properties.srb_broker.app_push.org_quota %>
+export APP_PUSH_TIMEOUT=<%= properties.srb_broker.app_push.timeout %>
+export APP_PUSH_MEMORY=<%= properties.srb_broker.app_push.memory %>
+export APP_PUSH_DISK=<%= properties.srb_broker.app_push.disk %>
+export SRB_COLLECTOR=<%= properties.srb_broker.srb_collector %>
+
+export DEFAULT_DB_NAME=${APP_NAME}-${APP_VERSION}-mysql
+
+# Use this only if app needs additional libraries that need to be downloaded
+#
+
+export SECURITY_USER_NAME=<%= properties.srb_broker.broker.user %>
+export SECURITY_USER_PASSWORD=<%= properties.srb_broker.broker.password %>
+
+export CREATE_OPEN_SECURITY_GROUP=<%= properties.srb_broker.create_open_security_group %>
+export DELETE_PREV_APP_INSTANCE=<%= properties.srb_broker.delete_prev_app_instance %>
+
+export CF_HOME=`pwd`/home/cf
+mkdir -p $CF_HOME
+
+# Following variables would be replaced based on blobs that get added and are considered as app bits
+# Modify extension type for App file - modify as needed
+APP_PREFIX_NAME=service-registry-broker
+EXTENSION_TYPE=jar
+
+TARGET_APP=${APP_PREFIX_NAME}.${EXTENSION_TYPE}
+JOB_NAME=deploy-service-broker
+PACKAGE_NAME_SUFFIX=broker
+PACKAGE_PATH=`echo /var/vcap/packages/*_${PACKAGE_NAME_SUFFIX}`
+
+RUN_DIR=/var/vcap/sys/run/$JOB_NAME
+LOG_DIR=/var/vcap/sys/log/$JOB_NAME
+PIDFILE=${RUN_DIR}/pid
+
+export DEBUG_LOG=$LOG_DIR/deploy-service-broker.log
+
+mkdir -p $RUN_DIR $LOG_DIR
+chown -R vcap:vcap $RUN_DIR $LOG_DIR
+
+function log_debug() {
+  echo `date` $1 >> $DEBUG_LOG
+}
+
+function authenticate_and_target() {
+  cf api $API_ENDPOINT <% if properties.ssl.skip_cert_verify %>--skip-ssl-validation<% end %>
+  cf auth $ADMIN_USER $ADMIN_PASSWORD
+  cf create-org $ORG
+  cf target -o $ORG
+  cf create-space $SPACE
+  cf target -s $SPACE
+}
+
+function create_quota() {
+  cf create-quota $QUOTA -m ${ORG_QUOTA}m -r 10 -s 10
+  cf update-quota $QUOTA -m ${ORG_QUOTA}m -r 10 -s 10 --disallow-paid-service-plans
+  cf set-quota $ORG $QUOTA
+}
+
+function create_open_security_group() {
+  if [ "${CREATE_OPEN_SECURITY_GROUP}" == "true" ]; then
+    echo "Creating open security group"
+
+    cf create-security-group all_open $PACKAGE_PATH/templates/all_open.json
+    cf bind-running-security-group all_open
+  else
+    echo "Not creating open security group"
+  fi
+}
+
+function provision_and_bind_db() {
+  db_plan=`cf marketplace | grep p-mysql | awk '{ print $2 }' | sed 's/,//g'`
+  if [ "$db_plan" != "" ]; then
+    cf create-service p-mysql $db_plan $DEFAULT_DB_NAME
+    cf bind-service ${APP_NAME}-${APP_VERSION} $DEFAULT_DB_NAME
+  fi
+}
+
+function restart_app() {
+  CF_TRACE=true cf restart ${APP_NAME}-${APP_VERSION}
+  cf logs ${APP_NAME}-${APP_VERSION} --recent
+}
+
+function add_env_vars() {
+
+  # Adding additional properties that most spring based apps or internal apps seem to be expecting
+  cf set-env ${APP_NAME}-${APP_VERSION} CF_TARGET $CF_TARGET
+  cf set-env ${APP_NAME}-${APP_VERSION} SECURITY_USER_NAME $SECURITY_USER_NAME
+  cf set-env ${APP_NAME}-${APP_VERSION} SECURITY_USER_PASSWORD $SECURITY_USER_PASSWORD
+}
+
+function delete_prev_app_instance() {
+
+  cf apps | grep ${APP_NAME}-${APP_VERSION}
+  existing_app_check=$?
+
+  if [ "$existing_app_check" == "0" ]; then
+
+    # Look for User-Provided env variables and stop after the first blank line after that
+    cf env ${APP_NAME}-${APP_VERSION} | awk 'f{print}/User-Provided/{f=1};/^ *$/{f=0}' \
+                | grep '.' | awk -F ':' '{print $1}' | while read env_variable_name
+    do
+      cf unset-env $env_variable_name
+    done
+    cf delete -f ${APP_NAME}-${APP_VERSION}  > /dev/null
+  fi
+}
+
+function push_app() {
+  pushd $PACKAGE_PATH
+    mkdir -p /var/vcap/data/tmp
+    export TMPDIR=/var/vcap/data/tmp
+
+    # Cleanup any older version of the app
+    <% if properties.delete_prev_app_instance%>
+      delete_prev_app_instance
+    <% end %>
+
+    cf api <% if properties.ssl.skip_cert_verify %>--skip-ssl-validation<% end %>
+
+    cp ${PACKAGE_PATH}/lib/${APP_PREFIX_NAME}*.${EXTENSION_TYPE}  ${PACKAGE_PATH}/${TARGET_APP}
+
+    # Service Registry Broker bundles a large number of (> 60k) javascripts and json files
+    # Normal cf push would hit resource matching and timeout...
+    # So, push a dummy file for timebeing and then push the actual app using curl to avoid resource matching
+    cf push ${APP_NAME}-${APP_VERSION} -p ${CF_HOME} -n ${APP_URI} -d ${APP_DOMAIN} -t ${APP_PUSH_TIMEOUT} -m ${APP_PUSH_MEMORY}M -k ${APP_PUSH_DISK}M --no-start
+    if [ "$?" -ne "0" ]; then
+      log_debug "App push failed..."
+      cf logs ${APP_NAME}-${APP_VERSION} --recent
+    fi
+
+    # Now push using curl command the actual app bits
+
+    APP_GUID=`cf app ${APP_NAME}-${APP_VERSION} --guid`
+    CF_BEARER_TOKEN=`cf oauth-token | grep bearer `
+    CF_APP_PUSH_URL="${API_ENDPOINT}/v2/apps/${APP_GUID}/bits"
+
+    #curl -kv -m 180 "$API_ENDPOINT/v2/apps/$(cf app APP_NAME --guid)/bits" -X PUT -F application=@"${PACKAGE_PATH}/${TARGET_APP}" --form resources='[]' -H "Authorization: `cf oauth-token | grep bearer`"
+    curl -kv -m 180 $CF_APP_PUSH_URL -X PUT -F application=@"${PACKAGE_PATH}/${TARGET_APP}" --form resources='[]' -H "Authorization: ${CF_BEARER_TOKEN}"
+    if [ "$?" -ne "0" ]; then
+      log_debug "App push failed..."
+    fi
+    cf logs ${APP_NAME}-${APP_VERSION} --recent
+  popd
+}
+
+
+cf -v
+authenticate_and_target
+create_open_security_group
+create_quota
+
+push_app
+add_env_vars
+provision_and_bind_db
+
+restart_app

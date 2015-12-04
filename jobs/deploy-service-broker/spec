@@ -1,0 +1,48 @@
+---
+name: deploy-service-broker
+templates:
+  deploy.sh.erb: bin/run
+packages:
+- cf_cli
+- srb_broker
+properties:
+  ssl.skip_cert_verify:
+    description: 'Whether to verify SSL certs when making web requests'
+  domain:
+    description: 'CloudFoundry system domain'
+  app_domains:
+    description: 'CloudFoundry application domains'
+  uaa.clients.srb_broker.secret:
+    description: 'UAA Client Secret'
+  srb_broker.app_name:
+    description: 'Name of the Service Broker Application'
+  srb_broker.app_version:
+    description: 'Version of the Service Broker Application'
+  srb_broker.app_uri:
+    description: 'Uri of the Service Broker Application'
+  srb_broker.create_open_security_group:
+    description: 'Open security group for the app to access outside'
+    default: false
+  srb_broker.app_push.org_quota:
+    description: 'Org Memory Quota for the Service Broker Application'
+    default: 2048
+  srb_broker.app_push.timeout:
+    description: 'App Push timeout for the Service Broker Application'
+    default: 180
+  srb_broker.app_push.memory:
+    description: 'App Push Memory limit for the Service Broker Application'
+    default: 1200
+  srb_broker.app_push.disk:
+    description: 'Disk Quota for the Service Broker Application'
+    default: 2048
+  srb_broker.encryption_key:
+    description: 'Specifies the key to be used when encrypting sessions'
+  srb_broker.cf.admin_user:
+    description: 'Username of the CF admin user'
+  srb_broker.cf.admin_password:
+    description: 'Password of the CF admin user'
+  srb_broker.broker.user:
+    description: 'Broker basic auth user'
+  srb_broker.broker.password:
+    description: 'Broker basic auth password'
+

@@ -1,0 +1,334 @@
+---
+name: srb-broker
+product_version: 0.1                            # [1]
+label: Service Registry Broker (experimental)
+rank: 50
+metadata_version: '1.5'                                    # [2]
+icon_image: iVBORw0KGgoAAAANSUhEUgAAADMAAAAwCAIAAAAzV9XTAAABL2lDQ1BJQ0MgUHJvZmlsZQAAKBVjYGAycHRxcmUSYGDIzSspCnJ3UoiIjFJgv8DAwcDNIMxgzGCdmFxc4BgQ4MMABHn5eakgGhV8u8bACBK5rAsyC1WOII8ruaCoBKjqDxAbpaQWJzMwMBoA2dnlJQVAccY5QLZIUjaYvQHELgoJcgaKHwGy+dIh7CsgdhKE/QTELgJ6AqjmC0h9OpjNxAFiJ0HYMiB2SWoFyF4G5/yCyqLM9IwSBSMDAwMFx5T8pFSF4MriktTcYgXPvOT8ooL8osSS1BSgWoj7QLoYBCEKQSGmYWhpaaEJFqUiAYoHiHGfA8Hhyyh2BiGGsCi5tKgMymNkMmZgIMRHmDFHgoHBfykDA8sfhJhJLwPDAh0GBv6pCDE1QwYGAX0Ghn1zAMOvUG/sJay0AAABm2lUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iWE1QIENvcmUgNS40LjAiPgogICA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPgogICAgICA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIgogICAgICAgICAgICB4bWxuczpleGlmPSJodHRwOi8vbnMuYWRvYmUuY29tL2V4aWYvMS4wLyI+CiAgICAgICAgIDxleGlmOlBpeGVsWERpbWVuc2lvbj41MTwvZXhpZjpQaXhlbFhEaW1lbnNpb24+CiAgICAgICAgIDxleGlmOlBpeGVsWURpbWVuc2lvbj40ODwvZXhpZjpQaXhlbFlEaW1lbnNpb24+CiAgICAgIDwvcmRmOkRlc2NyaXB0aW9uPgogICA8L3JkZjpSREY+CjwveDp4bXBtZXRhPgr0OphrAAACrklEQVRYCWNUMXO466THMPgA0+BzEtRFoy4jPWpGw2w0zEgPAdJ1jKaz0TAjPQRI18FCuhYGBUGhQ+n5MvwCaHr//f///ffvt9++3nn7+tjD+ztuXT/95NHvv3/RlBHJJcdluIxmYmTkZmMDIjkBQUcl1TQzq+23rvce2nfl5XNcWvCI0ypvMjIyivHwxhuZrYxKtFVQxuMCXFKUhtnff//OP3sCjEGgU5gZmThZWYW5uKX4+HnZ2SFWaoqJ9/kEBi6e8+TjB1yOwCpOqct+//tbu3vbvru3GBkYgI5jYWLiZedQFxVLNDYP1zNiZwGZbyglE6Zn2Hd4P1YX4BKk1GX//zMA0zg8mf9kYPj669eLz59OPX4IzBDA2AQ6F5j+3FQ1ph4//PPPH1zuwBSnNJ0xMgKDCtNYBmAmXXbh7A+YU+QFhAQ4OLGowy1Eqctwm8wADLlvv39BFADTHwcrKx7FmFI0dBkbCwswT0CsBMbsv3//Ma3HI0JDl+lKSPLAcuj7798+//qBxx2YUrRymYqwaIa5DTCrQqy89OLZxx+kuYzSvAn3KxszszgPHzMTowg3j7msfJKJBbCwgMgCc+vqS+f/A7MxKYBqLlMXFV8aEcfPwcHLxgEkgYUFxBnAFDbvzIk9d26S4iqQWqq5jJWZWZZfgB+1aPj44zvQWc37dv4ivV6nmsuAvgRGFzDK/v7/Dywsnn/6dPzRfWCRduDe7T///pEaYNQMs4fv3+VtXgtMZ59+/Hj++ROQ++LLZ1LTFrIHqBZmwEp9yfnTyEZTyKZVqUGhs4DaR11GehiOhtlomJEeAqTrIKc8+/vv/7vv3zhYQC3BH39+//pDZo8Sv2sZR0eQ8QcQFtnRUgNLoBAQGg0zAgGERXo0zLAECgGh0TAjEEBYpAdvmAEA5JzZQf7dpJEAAAAASUVORK5CYII=
+
+
+serial: true
+releases:                                                  # [5]
+- name: srb_broker
+  version: '1.0'
+  file: srb_broker-1.0.tgz
+
+# EDIT the stemcell version as required
+stemcell_criteria:                                                  # [3]
+  os: ubuntu-trusty
+  version: '3026'
+  requires_cpi: false
+
+property_blueprints:
+- name: encryption_key
+  type: secret
+- name: vm_credentials
+  type: salted_credentials
+  default:
+    identity: vcap
+- name: app_name
+  type: string
+  configurable: true
+  default: ServiceRegistryBroker
+- name: app_version
+  type: string
+  configurable: true
+  default: v1
+- name: app_uri
+  type: string
+  configurable: true
+  default: service-registry-broker
+- name: create_open_security_group
+  type: boolean
+  configurable: true
+  default: false
+- name: enable_global_access_to_plans
+  type: boolean
+  configurable: true
+  default: false
+- name: org_quota
+  type: integer
+  configurable: false
+  constraints:
+    min: 1024
+    max: 2048
+  default: 2048
+- name: memory
+  type: integer
+  configurable: false
+  constraints:
+    min: 1024
+    max: 2048
+  default: 1400
+- name: disk
+  type: integer
+  configurable: false
+  constraints:
+    min: 1024
+    max: 2048
+  default: 2048
+# This for any internal plans prebuilt into the service broker that needs to be registered with CF
+form_types:
+- property_inputs:
+  - reference: ".properties.app_name"
+    label: Service Broker Application Name
+    description: Enter the name for the Service Broker App
+  - reference: ".properties.app_version"
+    label: Service Broker Application version
+    description: Enter the version of the Service Broker App (Final app name would include app version like ${appName}-${appversion})
+  - reference: ".properties.app_uri"
+    label: Service Broker Application URI
+    description: Enter the uri/endpoint for the Service Broker app (on push to CF)
+  - reference: ".properties.create_open_security_group"
+    label: Open up Security Groups
+    description: Open up security group on CF for Service Broker to access other apps
+      or CF Cloud Controller
+  - reference: ".properties.enable_global_access_to_plans"
+    label: Enable Access of Brokered Services and Plans to Everyone
+    description: Open up All Services and plans to everyone across all orgs and spaces
+  name: srb_broker_app
+  label: Service Broker Configuration
+  description: Service Broker configuration
+job_types:
+- name: deploy-service-broker
+  resource_label: Deploy srb Service Broker
+  release: srb_broker
+  errand: true
+  templates:
+  - name: deploy-service-broker
+    release: srb_broker
+  resource_definitions:
+  - name: ram
+    type: integer
+    configurable: false
+    default: 2_048
+  - name: ephemeral_disk
+    type: integer
+    configurable: false
+    default: 4096
+  - name: persistent_disk
+    type: integer
+    configurable: false
+    default: 0
+  - name: cpu
+    type: integer
+    configurable: false
+    default: 1
+  static_ip: 0
+  dynamic_ip: 1
+  max_in_flight: 1
+  instance_definitions:
+  - name: instances
+    type: integer
+    configurable: false
+    default: 1
+  property_blueprints:
+  - name: vm_credentials
+    type: salted_credentials
+    default:
+      identity: vcap
+  - name: broker_credentials
+    type: salted_credentials
+
+  manifest: |
+    domain: (( ..cf.cloud_controller.system_domain.value ))
+    app_domains:
+      - (( ..cf.cloud_controller.apps_domain.value ))
+    ssl:
+      skip_cert_verify: (( ..cf.ha_proxy.skip_cert_verify.value ))
+    uaa:
+      url: https://uaa.(( ..cf.cloud_controller.system_domain.value ))
+      clients:
+        srb_broker:
+          secret: test
+    srb_broker:
+      app_name: (( .properties.app_name.value ))
+      app_version: (( .properties.app_version.value ))
+      app_uri: (( .properties.app_uri.value ))
+      create_open_security_group: (( .properties.create_open_security_group.value ))
+      app_push:
+        org_quota: (( .properties.org_quota.value ))
+        timeout: 180
+        memory: (( .properties.memory.value ))
+        disk: (( .properties.disk.value ))
+      persistence_store_type: none
+      encryption_key: (( .properties.encryption_key.value ))
+      cf:
+        admin_user: (( ..cf.uaa.system_services_credentials.identity ))
+        admin_password: (( ..cf.uaa.system_services_credentials.password ))
+      broker:
+        user: (( .deploy-service-broker.broker_credentials.identity ))
+        password: (( .deploy-service-broker.broker_credentials.password ))
+        internal_service_names: ""
+
+- name: register-broker
+  resource_label: Register srb Service Broker
+  templates:
+  - name: register-broker
+    release: srb_broker
+  errand: true
+  resource_definitions:
+  - name: ram
+    type: integer
+    configurable: false
+    default: 1024
+  - name: ephemeral_disk
+    type: integer
+    configurable: false
+    default: 2048
+  - name: persistent_disk
+    type: integer
+    configurable: false
+    default: 0
+  - name: cpu
+    type: integer
+    configurable: false
+    default: 1
+  static_ip: 0
+  dynamic_ip: 1
+  max_in_flight: 1
+  instance_definitions:
+  - name: instances
+    type: integer
+    configurable: false
+    default: 1
+  property_blueprints:
+  - name: vm_credentials
+    type: salted_credentials
+    default:
+      identity: vcap
+
+  manifest: |
+    domain: (( ..cf.cloud_controller.system_domain.value ))
+    app_domains:
+      - (( ..cf.cloud_controller.apps_domain.value ))
+    ssl:
+      skip_cert_verify: (( ..cf.ha_proxy.skip_cert_verify.value ))
+    uaa:
+      url: https://uaa.(( ..cf.cloud_controller.system_domain.value ))
+      clients:
+        srb_broker:
+          secret: test
+    srb_broker:
+      app_name: (( .properties.app_name.value ))
+      app_version: (( .properties.app_version.value ))
+      app_uri: (( .properties.app_uri.value ))
+      encryption_key: (( .properties.encryption_key.value ))
+      enable_global_access_to_plans: (( .properties.enable_global_access_to_plans.value ))
+      cf:
+        admin_user: (( ..cf.uaa.system_services_credentials.identity ))
+        admin_password: (( ..cf.uaa.system_services_credentials.password ))
+      broker:
+        user: (( .deploy-service-broker.broker_credentials.identity ))
+        password: (( .deploy-service-broker.broker_credentials.password ))
+        internal_service_names: ""
+
+- name: destroy-broker
+  resource_label: Remove srb Service Broker
+  templates:
+  - name: destroy-broker
+    release: srb_broker
+  errand: true
+  resource_definitions:
+  - name: ram
+    type: integer
+    configurable: false
+    default: 1024
+  - name: ephemeral_disk
+    type: integer
+    configurable: false
+    default: 2048
+  - name: persistent_disk
+    type: integer
+    configurable: false
+    default: 0
+  - name: cpu
+    type: integer
+    configurable: false
+    default: 1
+  static_ip: 0
+  dynamic_ip: 1
+  max_in_flight: 1
+  instance_definitions:
+  - name: instances
+    type: integer
+    configurable: false
+    default: 1
+  property_blueprints:
+  - name: vm_credentials
+    type: salted_credentials
+    default:
+      identity: vcap
+
+  manifest: |
+    domain: (( ..cf.cloud_controller.system_domain.value ))
+    app_domains:
+      - (( ..cf.cloud_controller.apps_domain.value ))
+    ssl:
+      skip_cert_verify: (( ..cf.ha_proxy.skip_cert_verify.value ))
+    uaa:
+      url: https://uaa.(( ..cf.cloud_controller.system_domain.value ))
+      clients:
+        srb_broker:
+          secret: test
+    srb_broker:
+      app_name: (( .properties.app_name.value ))
+      app_version: (( .properties.app_version.value ))
+      app_uri: (( .properties.app_uri.value ))
+      encryption_key: (( .properties.encryption_key.value ))
+      cf:
+        admin_user: (( ..cf.uaa.system_services_credentials.identity ))
+        admin_password: (( ..cf.uaa.system_services_credentials.password ))
+      broker:
+        user: (( .deploy-service-broker.broker_credentials.identity ))
+        password: (( .deploy-service-broker.broker_credentials.password ))
+        internal_service_names: ""
+
+- name: compilation
+  resource_label: compilation
+  resource_definitions:
+   - name: ram
+     type: integer
+     configurable: true
+     default: 2_048
+   - name: ephemeral_disk
+     type: integer
+     configurable: true
+     default: 4096
+   - name: persistent_disk
+     type: integer
+     configurable: true
+     default: 0
+   - name: cpu
+     type: integer
+     configurable: true
+     default: 2
+
+  static_ip: 0
+  dynamic_ip: 1
+  max_in_flight: 1
+
+  instance_definitions:
+    - name: instances
+      type: integer
+      default: 1
+
+update:
+  canaries: 1
+  canary_watch_time: 60000-240000
+  max_in_flight: 1
+  update_watch_time: 60000-240000
+
+requires_product_versions:
+- name: cf
+  version: "~> 1.3"
+provides_product_versions:
+- name: srb_broker
+  version: '1.0'
+post_deploy_errands:
+- name: deploy-service-broker
+- name: register-broker
+pre_delete_errands:
+- name: destroy-broker
+
+

@@ -1,0 +1,9 @@
+---
+name: srb_broker
+
+dependencies: []
+
+files:
+- templates/all_open.json
+# EDIT THE VERSION next time
+- srb_broker/service-registry-broker-0.0.1-SNAPSHOT.jar

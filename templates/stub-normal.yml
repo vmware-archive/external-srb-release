@@ -1,0 +1,18 @@
+---
+meta:
+  environment: NAME
+  service_name: NAME
+  security_groups:
+    - default
+  job_templates:
+    - name: srb_broker
+      release: srb_broker
+  stemcell:
+    name: STEMCELL
+
+director_uuid: PLACEHOLDER-DIRECTOR-UUID
+releases:
+  - name: srb_broker
+    version: latest
+properties:
+  srb_broker: {}

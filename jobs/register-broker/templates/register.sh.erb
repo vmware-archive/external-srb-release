@@ -1,0 +1,72 @@
+#!/bin/bash
+set -e -x
+
+
+  <%
+    def grab_app_domain_name
+      app_domains_str = properties.app_domains.to_s
+      array_start = ( app_domains_str =~ /^\[/ )
+      if (array_start == 0)
+        app_domain_entry = app_domains_str.gsub(/^\[/, '').gsub(/\]/,'').gsub(/,.*/, '')
+      else
+        app_domain_entry = app_domains_str
+      end
+      app_domain_entry
+    end
+    app_domain = grab_app_domain_name
+  %>
+
+export SCHEME=https
+export PATH="/var/vcap/packages/cf_cli/bin:$PATH"
+export ADMIN_USER=<%= properties.srb_broker.cf.admin_user %>
+export ADMIN_PASSWORD=<%= properties.srb_broker.cf.admin_password %>
+export DOMAIN=<%= properties.domain %>
+export API_ENDPOINT=$SCHEME://api.$DOMAIN
+export APP_DOMAIN=<%="#{app_domain}" %>
+export APP_NAME=<%= properties.srb_broker.app_name %>
+export APP_VERSION=<%= properties.srb_broker.app_version %>
+export APP_URI=<%= properties.srb_broker.app_uri %>
+export ORG=${APP_NAME}-service-org
+export SPACE=${APP_NAME}-service-space
+export BROKER_NAME=${APP_NAME}-${APP_VERSION}-service-broker
+export BROKER_USER=<%= properties.srb_broker.broker.user %>
+export BROKER_PASS=<%= properties.srb_broker.broker.password %>
+export BROKER_HOST=$SCHEME://${APP_URI}.${APP_DOMAIN}
+
+# Use this only when there are already inbuild services that need to enabled for public
+export BROKER_INTERNAL_SERVICE_NAMES=<%= properties.srb_broker.broker.internal_service_names %>
+
+function authenticate_and_target() {
+  cf api $API_ENDPOINT <% if properties.ssl.skip_cert_verify %>--skip-ssl-validation<% end %>
+  cf auth $ADMIN_USER $ADMIN_PASSWORD
+  cf target -o $ORG -s $SPACE
+}
+
+function register_broker() {
+  broker=`cf service-brokers | grep $BROKER_NAME || true`
+  if [[ -z "$broker" ]]; then
+    cf create-service-broker $BROKER_NAME $BROKER_USER $BROKER_PASS $BROKER_HOST
+  else
+    cf update-service-broker $BROKER_NAME $BROKER_USER $BROKER_PASS $BROKER_HOST
+  fi
+}
+
+function publicize_services() {
+  services=`cf service-access | awk "/${BROKER_NAME}/{flag=1;next}/broker: /{flag=0}flag" | egrep -v "access *orgs" | grep "."  | awk '{print $1}' `
+  for service_name in $services; do
+    cf enable-service-access $service_name
+  done
+}
+
+function publicize_service() {
+  service_url=$1
+  cf curl $service_url -X PUT -d '{"public": true}'
+}
+
+cf -v
+authenticate_and_target
+register_broker
+
+<% if  properties.srb_broker.enable_global_access_to_plans %>
+  publicize_services
+<% end %>

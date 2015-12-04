@@ -1,0 +1,64 @@
+properties:
+  # EDIT ME -- change the domain names
+  domain: bosh-lite.com
+  app_domains: bosh-lite.com
+  uaa:
+    clients:
+      srb_broker:
+        secret: 'test'
+  ssl:
+    skip_cert_verify: true
+  srb_broker:
+    encryption_key: 'test'
+    # EDIT ME -- Change the app name and URI as needed
+    app_name: ServiceRegistryBroker
+    app_version: v1
+    app_uri: service-registry-broker
+    create_open_security_group: false
+    enable_global_access_to_plans: true
+    ### CUSTOM_VARIABLE_MANIFEST_BEGIN_MARKER
+    ### CUSTOM_VARIABLE_MANIFEST_END_MARKER
+    app_push:
+      memory: 512
+      org_quota: 1024
+      timeout: 180
+    # Set the persistence type to 'mysql' for using my sql instance to store data
+    # Set the persistence type to 'custom' for using custom db (non-my sql) instance to store data
+    # Set the persistence type to 'none' if its all in-memory
+    persistence_store_type: mysql
+
+    #
+    # EDIT ME - remove if there are no On-Demand Plans that need to be created
+
+    cf:
+      admin_user: admin
+      admin_password: admin
+      # EDIT ME - These are supposed to refer to inbuilt plans which needs to be made public accessible from the Broker
+    broker:
+      user: testuser
+      password: testuser
+      internal_service_names: ""
+    ### CUSTOM_VARIABLE_MANIFEST_END_MARKER
+
+    app_push:
+      memory: 512
+      org_quota: 1024
+      timeout: 180
+    # Set the persistence type to 'mysql' for using my sql instance to store data
+    # Set the persistence type to 'custom' for using custom db (non-my sql) instance to store data
+    # Set the persistence type to 'none' if its all in-memory
+    persistence_store_type: mysql
+
+    #
+    # EDIT ME - remove if there are no On-Demand Plans that need to be created
+
+    cf:
+      admin_user: admin
+      admin_password: admin
+    broker:
+      user: testuser
+      password: testuser
+      # EDIT ME - These are supposed to refer to inbuilt plans which needs to be made public accessible from the Broker
+      internal_service_names: ""
+
+
