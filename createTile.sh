@@ -15,12 +15,12 @@ pushd tmp
 mkdir -p metadata releases 
 cp $TILE_FILE metadata
 cp $RELEASE_TARFILE releases
-#cp -r ../content_migrations .
+cp -r ../content_migrations .
 
 # Ignore bundling the stemcell as most often the Ops Mgr carries the stemcell.
 # If Ops Mgr complains of missing stemcell, change the version specified inside the tile to the one that Ops mgr knows about
 
-#zip -r ${TILE_NAME}-${TILE_VERSION}.pivotal metadata releases content_migrations
-zip -r ${TILE_NAME}-${TILE_VERSION}.pivotal metadata releases 
+zip -r ${TILE_NAME}-${TILE_VERSION}.pivotal metadata releases content_migrations
+#zip -r ${TILE_NAME}-${TILE_VERSION}.pivotal metadata releases 
 mv ${TILE_NAME}-${TILE_VERSION}.pivotal ..
 popd

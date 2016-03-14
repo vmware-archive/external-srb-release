@@ -1,6 +1,6 @@
 ---
 name: srb-broker
-product_version: 0.1                            # [1]
+product_version: '0.1'                            # [1]
 label: Service Registry Broker (experimental)
 rank: 50
 metadata_version: '1.5'                                    # [2]
@@ -16,7 +16,7 @@ releases:                                                  # [5]
 # EDIT the stemcell version as required
 stemcell_criteria:                                                  # [3]
   os: ubuntu-trusty
-  version: '3026'
+  version: '3146.9'
   requires_cpi: false
 
 property_blueprints:
@@ -32,7 +32,7 @@ property_blueprints:
   default: ServiceRegistryBroker
 - name: app_version
   type: string
-  configurable: true
+  configurable: false
   default: v1
 - name: app_uri
   type: string
@@ -40,26 +40,26 @@ property_blueprints:
   default: service-registry-broker
 - name: create_open_security_group
   type: boolean
-  configurable: true
-  default: false
+  configurable: false
+  default: true
 - name: enable_global_access_to_plans
   type: boolean
-  configurable: true
-  default: false
+  configurable: false
+  default: true
 - name: org_quota
   type: integer
   configurable: false
   constraints:
     min: 1024
-    max: 2048
-  default: 2048
+    max: 10240
+  default: 10240
 - name: memory
   type: integer
   configurable: false
   constraints:
     min: 1024
     max: 2048
-  default: 1400
+  default: 1536
 - name: disk
   type: integer
   configurable: false
@@ -73,19 +73,9 @@ form_types:
   - reference: ".properties.app_name"
     label: Service Broker Application Name
     description: Enter the name for the Service Broker App
-  - reference: ".properties.app_version"
-    label: Service Broker Application version
-    description: Enter the version of the Service Broker App (Final app name would include app version like ${appName}-${appversion})
   - reference: ".properties.app_uri"
     label: Service Broker Application URI
-    description: Enter the uri/endpoint for the Service Broker app (on push to CF)
-  - reference: ".properties.create_open_security_group"
-    label: Open up Security Groups
-    description: Open up security group on CF for Service Broker to access other apps
-      or CF Cloud Controller
-  - reference: ".properties.enable_global_access_to_plans"
-    label: Enable Access of Brokered Services and Plans to Everyone
-    description: Open up All Services and plans to everyone across all orgs and spaces
+    description: Enter the uri for the Service Broker App
   name: srb_broker_app
   label: Service Broker Configuration
   description: Service Broker configuration
@@ -151,7 +141,7 @@ job_types:
         timeout: 180
         memory: (( .properties.memory.value ))
         disk: (( .properties.disk.value ))
-      persistence_store_type: none
+      persistence_store_type: mysql
       encryption_key: (( .properties.encryption_key.value ))
       cf:
         admin_user: (( ..cf.uaa.system_services_credentials.identity ))

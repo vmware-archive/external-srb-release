@@ -52,7 +52,7 @@ function register_broker() {
 }
 
 function publicize_services() {
-  services=`cf service-access | awk "/${BROKER_NAME}/{flag=1;next}/broker: /{flag=0}flag" | egrep -v "access *orgs" | grep "."  | awk '{print $1}' `
+  services=`cf service-access | awk "/${BROKER_NAME}/broker: {flag=1;next}/broker: /{flag=0}flag" | egrep -v "access *orgs" | grep "."  | awk '{print $1}' | uniq`
   for service_name in $services; do
     cf enable-service-access $service_name
   done
