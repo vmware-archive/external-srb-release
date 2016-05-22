@@ -26,7 +26,7 @@ The Service Registry Broker would automatically update its catalog and change th
 
 * Using the Service Registry Broker
 
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://github.com/cf-platform-eng/external-srb/blob/master/docs/SRB.mp4?raw=true" target="_blank"><img src="./docs/SRB-Video.png" 
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://github.com/cf-platform-eng/external-srb-release/blob/master/docs/SRB.mp4?raw=true" target="_blank"><img src="./docs/SRB-Video.png" 
 alt="Service Registry Broker" width="500" height="280" border="3" /></a>
 
 For more details on building or using the Service Registry Broker, please refer to the [documentation] (docs/ServiceRegistryBroker.pdf) and [Service Registry Broker Repo](https://github.com/cf-platform-eng/service-registry-broker.git)
