@@ -16,7 +16,7 @@ releases:                                                  # [5]
 # EDIT the stemcell version as required
 stemcell_criteria:                                                  # [3]
   os: ubuntu-trusty
-  version: '3146.9'
+  version: '3146.12'
   requires_cpi: false
 
 property_blueprints:
@@ -64,8 +64,8 @@ property_blueprints:
   type: integer
   configurable: false
   constraints:
-    min: 1024
-    max: 2048
+    min: 2024
+    max: 3048
   default: 2048
 # This for any internal plans prebuilt into the service broker that needs to be registered with CF
 form_types:
