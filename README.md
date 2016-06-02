@@ -31,6 +31,11 @@ alt="Service Registry Broker" width="500" height="280" border="3" /></a>
 
 For more details on building or using the Service Registry Broker, please refer to the [documentation] (docs/ServiceRegistryBroker.pdf) and [Service Registry Broker Repo](https://github.com/cf-platform-eng/service-registry-broker.git)
 
+# SRB Tile
+
+A prebuilt tile is available here for testing: https://s3.amazonaws.com/pcf-srb/Service-Registry-Broker-Experimental-0.1.pivotal
+The SRB broker does require MySQL service to be available in the CF marketplace to store its metadata.
+This tile is purely experimental and not supported officially.
 
 # SRB Release
 
