@@ -1,3 +1,5 @@
+# external-srb-release is no longer actively maintained by VMware.
+
 # Service Registry Broker
 A quick and easy way to expose pre-built, custom, existing or legacy services on the Cloud Foundry Marketplace without wrapping each service with its own service broker.
 This repo is for creating a bosh release around the external Service Registry Broker application and also for generating its associated Tile.
